@@ -1,5 +1,22 @@
 language: node_js
 node_js:
   - "0.10"
-before_install:
+env:
+  - DMD_VER=2.066.0 DUB_VER=0.9.21 TRAVIS_OS_NAME=linux
+install:
+  # Install dmd
+  - DMD_DEB=dmd_${DMD_VER}-0_amd64.deb
+  - wget ftp://ftp.dlang.org/${DMD_DEB}
+  - sudo dpkg -i ${DMD_DEB} || true
+  - sudo apt-get update
+  - sudo apt-get install -f
+  - sudo dpkg -i ${DMD_DEB}
+  # Install dub
+  - DUB_TAR=dub-${DUB_VER}-${TRAVIS_OS_NAME}-x86_64.tar.gz
+  - wget http://code.dlang.org/files/${DUB_TAR}
+  - sudo tar -C /usr/local/bin -zxf ${DUB_TAR}
+script:
+  - dub build
   - cd test
+  - npm install
+  - npm test

@@ -1,30 +1,62 @@
 var traceur = require( 'traceur' ),
     fs      = require( 'fs' ),
-    path    = require( 'path' );
+    path    = require( 'path' ),
+    proc    = require( 'child_process' );
 
 var dSources = './source';
 
-// Returns: result file name
-function compileD( sourceFile )
-{
+// Arguments
+var args = {
+    // Delete JS files after test
+    deleteJs: false,
+    // Test output of dmd execution against js execution
+    testDmd: false
+};
 
-}
+process.argv.forEach( function( val, index ) {
+    // Ignore node
+    if( index == 0 ) return;
+
+    if( val === "--delete-js" || val == "-d" )
+        args.deleteJs = true;
+
+    else if( val === "--test-dmd" || val === "-t" )
+        args.testDmd = true;
+} );
 
 // Returns compiled code
-function compileJs( sourceFile )
+function compileEs6( source )
 {
-    var src = "class MyClass { log() { console.log( 'Testing!' ); } } var c = new MyClass(); c.log();";
+    if( source == "")
+        return "";
+
     var options = {
     };
 
-    return traceur.compile( src, options );
+    return traceur.compile( source, options );
 }
 
-// Executes the new code.
-function executeJs( source )
+function compile( file )
 {
-    console.log( "Compiled:\n" + source );
-    eval( source );
+    // Compile D to js
+    proc.exec( path.join( "..", "d2js" ) + " " + file, function( err, stdout, stderr ) {
+        if( err ) throw err;
+
+        // Get the path to the JS file
+        var jsFile = path.join( path.dirname( file ), path.basename( file, ".d" ) ) + ".js";
+
+        // Read the JS file
+        fs.readFile( jsFile, function( err, data ) {
+            if( err ) throw err;
+
+            // Compile ES6, and evaluate
+            eval( compileEs6( data.toString() ) );
+
+            // Delete the js file
+            if( args.deleteJs )
+                fs.unlink( jsFile );
+        } );
+    } );
 }
 
 fs.readdir( dSources, function( err, files ) {
@@ -32,16 +64,13 @@ fs.readdir( dSources, function( err, files ) {
 
     for( var fileIdx in files )
     {
+        // The path to the file
         var file = path.join( dSources, files[ fileIdx ] );
 
-        console.log( "Compiling: ", file );
+        // Ignore generate js.
+        if( path.extname( file ) === ".js" )
+            continue;
 
-        var jsFileName = compileD( file );
-        var compiledJs = compileJs( jsFileName );
-        executeJs( compiledJs );
-
-        /*fs.unlink( jsFileName, function( err ) {
-            if( err ) throw err;
-        } );*/
+        compile( file );
     }
 } );
