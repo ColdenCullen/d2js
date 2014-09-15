@@ -1,8 +1,14 @@
 {
-	"name": "d2js",
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2014, Colden",
-	"authors": ["Colden"],
-	"dependencies": {
-	}
+    "name": "d2js",
+    "description": "A D to JavaScript transpiler based on libdparse.",
+    "copyright": "Copyright © 2014, Colden Cullen",
+    "license": "MIT",
+    "authors": [ "Colden Cullen" ],
+
+    "dependencies": {
+        "libdparse": "0.1.1"
+    },
+
+    "targetName": "d2js",
+    "targetType": "executable"
 }
