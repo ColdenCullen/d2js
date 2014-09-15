@@ -268,7 +268,7 @@ docs.json
 dub.selections.json
 
 # Dub Artifacts
-.dub/
-__test__*__
-d2js
-d2js.exe
+/.dub/
+/__test__*__
+/d2js
+/d2js.exe

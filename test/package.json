@@ -1,0 +1,14 @@
+{
+  "name": "d2js-test",
+  "description": "Tests for d2js",
+  "license": "MIT",
+  "author": "Colden Cullen",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "node ./test.js"
+  },
+  "dependencies": {
+    "traceur": "0.0.62"
+  }
+}

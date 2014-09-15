@@ -1,6 +1,6 @@
 import std.stdio;
 
-void main()
+void main( string[] args )
 {
     writeln("Edit source/app.d to start your project.");
 }
