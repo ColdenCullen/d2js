@@ -272,3 +272,5 @@ dub.selections.json
 /__test__*__
 /d2js
 /d2js.exe
+
+/test/source/*.js
