@@ -68,7 +68,7 @@ fs.readdir( dSources, function( err, files ) {
         var file = path.join( dSources, files[ fileIdx ] );
 
         // Ignore generate js.
-        if( path.extname( file ) === ".js" )
+        if( path.extname( file ) !== ".d" )
             continue;
 
         compile( file );
