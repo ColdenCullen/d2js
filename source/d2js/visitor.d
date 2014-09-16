@@ -1,6 +1,7 @@
 module d2js.visitor;
+import d2js.helpers;
 
-import std.d.ast;
+import std.d.ast, std.d.lexer;
 import std.array, std.algorithm;
 
 class JSVisitor : ASTVisitor
@@ -13,7 +14,13 @@ class JSVisitor : ASTVisitor
     override void visit( const ModuleDeclaration mod )
     {
         import std.stdio;
-        writeln( "Parsing module: ", mod.moduleName.identifiers.map!( id => cast(string)id.text ).joiner( "." ) );
+        writeln( "Parsing module: ", mod.moduleName.identifiers.listToString!( id => cast(string)id.text )( "." ) );
+    }
+
+    // Handle tokens
+    override void visit( const Token tok )
+    {
+        result ~= tok.text;
     }
 
     // Handle function declarations
@@ -27,9 +34,7 @@ class JSVisitor : ASTVisitor
         {
             assert( !func.parameters.hasVarargs, "var args currently unsupported." );
             auto paramStr = func.parameters.parameters
-                            .map!( par => cast(string)par.name.text )
-                            .joiner( ", " )
-                            .array();
+                            .listToString!( par => cast(string)par.name.text );
 
             result ~= "function "~funcName~"(";
             result ~= paramStr;
@@ -42,6 +47,20 @@ class JSVisitor : ASTVisitor
         {
             result ~= "}\n";
         }
+    }
+
+    // Handle function calls
+    override void visit( const FunctionCallExpression call )
+    {
+        assert( !call.templateArguments, "Template args not supported." );
+
+        visit( call.unaryExpression );
+        result ~= "( ";
+        foreach( arg; call.arguments.argumentList.items )
+        {
+            visit( arg );
+        }
+        result ~= " )";
     }
 
     /// Save the code.
