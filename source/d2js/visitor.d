@@ -11,10 +11,17 @@ class JSVisitor : ASTVisitor
     // To write the resulting code to
     Appender!string result;
 
+    // Handle module declarations.
     override void visit( const ModuleDeclaration mod )
     {
         import std.stdio;
         writeln( "Parsing module: ", mod.moduleName.identifiers.listToString!( id => cast(string)id.text )( "." ) );
+    }
+
+    // Handle imports
+    override void visit( const ImportDeclaration imp )
+    {
+        //TODO
     }
 
     // Handle tokens
@@ -23,11 +30,20 @@ class JSVisitor : ASTVisitor
         result ~= tok.text;
     }
 
+    // Handle identifiers
+    override void visit( const IdentifierChain identifierChain )
+    {
+        foreach( i, ident; identifierChain.identifiers )
+        {
+            if( i > 0 ) result ~= ".";
+            visit( ident );
+        }
+    }
+
     // Handle function declarations
     override void visit( const FunctionDeclaration func )
     {
-        string funcName = func.name.text;
-        bool isMain = funcName == "main";
+        bool isMain = func.name.text == "main";
 
         // Emit main function directly into text.
         if( !isMain )
@@ -36,12 +52,16 @@ class JSVisitor : ASTVisitor
             auto paramStr = func.parameters.parameters
                             .listToString!( par => cast(string)par.name.text );
 
-            result ~= "function "~funcName~"(";
+            result ~= "function ";
+            visit( func.name );
+            result ~= "(";
             result ~= paramStr;
-            result ~= ") // -> "~"RETURN TYPE HERE\n{\n";
+            result ~= ") // -> ";
+            visit( func.returnType );
+            result ~= "\n{\n";
         }
 
-        visit( func.functionBody );
+        //visit( func.functionBody );
 
         if( !isMain )
         {
@@ -55,18 +75,21 @@ class JSVisitor : ASTVisitor
         assert( !call.templateArguments, "Template args not supported." );
 
         visit( call.unaryExpression );
-        result ~= "( ";
+        result ~= "(";
         foreach( arg; call.arguments.argumentList.items )
         {
             visit( arg );
         }
-        result ~= " )";
+        result ~= ")";
+        //TODO Remove
+        result ~= ";\n";
     }
 
     /// Save the code.
     void saveResults( string filePath )
     {
         import std.file;
+        result ~= "function writeln() { console.log( arguments ); }";
         filePath.write( result.data );
     }
 }

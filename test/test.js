@@ -15,7 +15,7 @@ var args = {
 
 process.argv.forEach( function( val, index ) {
     // Ignore node
-    if( index == 0 ) return;
+    if( index === 0 ) return;
 
     if( val === "--delete-js" || val == "-d" )
         args.deleteJs = true;
@@ -27,7 +27,7 @@ process.argv.forEach( function( val, index ) {
 // Returns compiled code
 function compileEs6( source )
 {
-    if( source == "")
+    if( source === "")
         return "";
 
     var options = {
@@ -39,6 +39,7 @@ function compileEs6( source )
 function compile( file )
 {
     // Compile D to js
+    console.log( path.join( "..", "d2js" ) + " " + file );
     proc.exec( path.join( "..", "d2js" ) + " " + file, function( err, stdout, stderr ) {
         if( err ) throw err;
 
