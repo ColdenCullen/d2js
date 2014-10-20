@@ -2,7 +2,7 @@ module d2js.visitor;
 import d2js.helpers;
 
 import std.d.ast, std.d.lexer;
-import std.array, std.algorithm;
+import std.array, std.algorithm, std.format, std.path, std.string;
 
 class JSVisitor : ASTVisitor
 {
@@ -10,6 +10,25 @@ class JSVisitor : ASTVisitor
     alias visit = ASTVisitor.visit;
     // To write the resulting code to
     Appender!string result;
+
+    // Visit a node, and return the result.
+    string visitWithResult( T )( const T toVisit )
+    {
+        auto oldResult = result;
+        result = appender!string;
+
+        visit( toVisit );
+        string visitResult = result.data;
+
+        result = oldResult;
+        return visitResult;
+    }
+
+    // Handle tokens
+    override void visit( const Token tok )
+    {
+        result ~= tok.text;
+    }
 
     // Handle module declarations.
     override void visit( const ModuleDeclaration mod )
@@ -19,15 +38,14 @@ class JSVisitor : ASTVisitor
     }
 
     // Handle imports
-    override void visit( const ImportDeclaration imp )
+    override void visit( const ImportDeclaration impDecl )
     {
-        //TODO
-    }
-
-    // Handle tokens
-    override void visit( const Token tok )
-    {
-        result ~= tok.text;
+        foreach( i, imp; impDecl.singleImports )
+        {
+            string importName = visitWithResult( imp );
+            auto importPath = importName.replace( ".", dirSeparator );
+            result.formattedWrite( "import * as %s from '%s';\n", importName, importPath );
+        }
     }
 
     // Handle identifiers
@@ -52,16 +70,14 @@ class JSVisitor : ASTVisitor
             auto paramStr = func.parameters.parameters
                             .listToString!( par => cast(string)par.name.text );
 
-            result ~= "function ";
+            result.formattedWrite( "function " );
             visit( func.name );
-            result ~= "(";
-            result ~= paramStr;
-            result ~= ") // -> ";
+            result.formattedWrite( "(%s) // -> ", paramStr );
             visit( func.returnType );
-            result ~= "\n{\n";
+            result.formattedWrite( "\n{\n" );
         }
 
-        //visit( func.functionBody );
+        visit( func.functionBody );
 
         if( !isMain )
         {
@@ -76,9 +92,9 @@ class JSVisitor : ASTVisitor
 
         visit( call.unaryExpression );
         result ~= "(";
-        foreach( arg; call.arguments.argumentList.items )
+        //foreach( arg; call.arguments.argumentList.items )
         {
-            visit( arg );
+        //    visit( arg );
         }
         result ~= ")";
         //TODO Remove

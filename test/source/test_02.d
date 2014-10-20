@@ -2,7 +2,7 @@
  * Test for non-main functions
  */
 module test_02;
-import std.stdio;
+import std.stdio, std.file;
 
 void main()
 {
