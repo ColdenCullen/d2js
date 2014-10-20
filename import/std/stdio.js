@@ -1,4 +1,4 @@
-export function writeln()
+function writeln()
 {
     console.log( arguments );
 }

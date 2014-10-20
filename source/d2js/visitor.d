@@ -45,7 +45,7 @@ class JSVisitor : ASTVisitor
 
         result.formattedWrite( "import * as " );
         visit( imp.rename.text ? imp.rename : imp.identifierChain.identifiers[ $-1 ] );
-        result.formattedWrite( " from '%s';\n", importPath );
+        result.formattedWrite( " from '../import/%s.js';\n", importPath );
     }
 
     // Handle identifiers
