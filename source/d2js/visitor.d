@@ -38,14 +38,14 @@ class JSVisitor : ASTVisitor
     }
 
     // Handle imports
-    override void visit( const ImportDeclaration impDecl )
+    override void visit( const SingleImport imp )
     {
-        foreach( i, imp; impDecl.singleImports )
-        {
-            string importName = visitWithResult( imp );
-            auto importPath = importName.replace( ".", dirSeparator );
-            result.formattedWrite( "import * as %s from '%s';\n", importName, importPath );
-        }
+        string importName = visitWithResult( imp.identifierChain );
+        auto importPath = importName.replace( ".", dirSeparator );
+
+        result.formattedWrite( "import * as " );
+        visit( imp.rename.text ? imp.rename : imp.identifierChain.identifiers[ $-1 ] );
+        result.formattedWrite( " from '%s';\n", importPath );
     }
 
     // Handle identifiers
